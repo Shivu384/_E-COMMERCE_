@@ -1,3 +1,4 @@
+
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
@@ -13,7 +14,7 @@
   <meta content="ecommerce website we deliver products in 1 hours" name="description">
   <meta content="ecommerce" name="amazon,flipkart,selling,products">
 
-  
+
 
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
@@ -21,16 +22,12 @@
   <!-- Vendor CSS Files -->
   <link href="{% static '/assets/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
   <link href="{% static '/assets/vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
-  <!-- <link href="{% static '/assets/vendor/boxicons/css/boxicons.min.css' %}" rel="stylesheet"> -->
+  <link href="{% static '/assets/vendor/boxicons/css/boxicons.min.css' %}" rel="stylesheet">
   <link href="{% static '/assets/vendor/glightbox/css/glightbox.min.css' %}" rel="stylesheet">
-  <!-- <link href="{% static '/assets/vendor/remixicon/remixicon.css' %}" rel="stylesheet"> -->
+  <link href="{% static '/assets/vendor/remixicon/remixicon.css' %}" rel="stylesheet">
   <link href="{% static '/assets/vendor/swiper/swiper-bundle.min.css' %}" rel="stylesheet">
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css" integrity="sha512-MV7K8+y+gLIBoVD59lQIYicR65iaqukzvf/nwasF0nqhPay5w/9lJmVM2hMDcnK1OnMGCdVK+iQrJ7lzPJQd1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-  
-  <!-- CDN alternatives for missing vendor files -->
-  <link href="https://cdn.jsdelivr.net/npm/boxicons@latest/css/boxicons.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/remixicon@latest/fonts/remixicon.css" rel="stylesheet">
 
   <!-- Template Main CSS File -->
   <link href="{% static '/assets/css/style.css' %}" rel="stylesheet">
@@ -56,14 +53,8 @@
           <li><a class="nav-link scrollto" href="/checkout">Checkout</a></li>
           <li><a class="nav-link scrollto" href="/profile">My Profile<i class="fa-regular fa-square-user"></i> </a></li>
 
-          <li class="dropdown">
-            <a href="#" class="nav-link scrollto bg-danger p-3 m-2 text-white" id="cartDropdown">
-              <i class="fa-solid fa-cart-shopping"></i> Cart (<span id="cart">0</span>) <i class="bi bi-chevron-down"></i>
-            </a>
-            <ul id="cartItems" class="dropdown-content" style="display: none;">
-              <li><p class="text-center p-3">Your cart is empty</p></li>
-            </ul>
-          </li>
+          <button type="button" class="nav-link scrollto bg-danger p-3 m-2 text-white" id="popcart" data-container="body" data-toggle="popover" data-placement="bottom" data-html="true" ><i class="fa-solid fa-cart-shopping"></i>  Cart (<span id="cart">0</span>)
+          </button>
 
 
 
@@ -221,32 +212,6 @@
 
   <!-- Template Main JS File -->
   <script src="{% static '/assets/js/main.js' %}"></script>
-
-  <!-- Cart Dropdown JavaScript -->
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const cartDropdown = document.getElementById('cartDropdown');
-      const cartItems = document.getElementById('cartItems');
-      
-      if (cartDropdown && cartItems) {
-        cartDropdown.addEventListener('click', function(e) {
-          e.preventDefault();
-          if (cartItems.style.display === 'none' || cartItems.style.display === '') {
-            cartItems.style.display = 'block';
-          } else {
-            cartItems.style.display = 'none';
-          }
-        });
-
-        // Close dropdown when clicking outside
-        document.addEventListener('click', function(e) {
-          if (!cartDropdown.contains(e.target)) {
-            cartItems.style.display = 'none';
-          }
-        });
-      }
-    });
-  </script>
 
 </body>
 

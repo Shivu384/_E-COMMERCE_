@@ -1,7 +1,9 @@
 {% autoescape off %}
-  Hi {{ user.username }}
-  Please click the link below to activate your account:
+Hi {{ user.username }},
 
-  http ://{{ domain }}{% url 'activate' uidb64=uidb64 token=token %}
-  
+Please click the link below to activate your account:
+
+http://{{ domain }}{% url 'activate' uidb64=uidb64 token=token %}
+
+Thank you for signing up!
 {% endautoescape %}

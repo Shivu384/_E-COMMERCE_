@@ -3,12 +3,9 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.utils.encoding import force_bytes, force_str,force_text,DjangoUnicodeDecodeError
-from flask.views import View
-from .utils import generate_token,TokenGenerator
-from django.core.mail import EmailMessage
-from django.conf import settings
-from django.contrib.auth import authenticate, login,logout
+from django.utils.encoding import force_bytes, force_str
+from django.contrib.auth import authenticate, login, logout
+from .utils import generate_token
 
 # Create your views here.
 def signup(request):
@@ -33,7 +30,7 @@ def signup(request):
         message=render_to_string('activate.html',{
             'user':user,
             'domain':'127.0.0.1:8000',
-            'uid':urlsafe_base64_encode(force_bytes(user.pk)),
+            'uidb64':urlsafe_base64_encode(force_bytes(user.pk)),
             'token':generate_token.make_token(user)
 
         })
@@ -43,21 +40,6 @@ def signup(request):
         messages.success(request,f"Activate Your Account by clicking the link in your gmail {message}")
         return redirect('/auth/login/')
     return render(request,"signup.html")
-
-class ActivateAccountView(View):
-    def activate(self,request,uidb64,token):
-        try:
-            uid = force_str(urlsafe_base64_decode(uidb64))
-            user = User.objects.get(pk=uid)
-        except Exception as identifier:
-            user = None
-        if user is not None and generate_token.check_token(user, token):
-            user.is_active = True
-            user.save()
-            messages.success(request,"Your Account is Activated")
-            return redirect('/auth/login/')
-        else:
-            return render(request, "activatefail.html")
 
 
 def handlelogin(request):
@@ -74,11 +56,35 @@ def handlelogin(request):
 
         else:
             messages.error(request,"Invalid Credentials")
-            return redirect('/auth/login')
+            return redirect('/auth/login/')
 
     return render(request,'login.html')  
+
+
+
+
+
+
+
+
 
 def handlelogout(request):
     logout(request)
     messages.info(request,"Logout Success")
     return redirect('/auth/login')
+
+
+def activate(request, uidb64, token):
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    if user is not None and generate_token.check_token(user, token):
+        user.is_active = True
+        user.save()
+        messages.success(request, "Account activated successfully! You can now login.")
+        return redirect('/auth/login/')
+    else:
+        return render(request, 'activatefail.html')
