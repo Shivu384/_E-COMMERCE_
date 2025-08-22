@@ -3,59 +3,139 @@
 {% block body %}
 <section id="portfolio" class="portfolio">
     <div class="container">
-<h1>My Profile</h1>
-
-<table class="table table-info table-striped">
-    <thead>
-      <tr>
-        <th scope="col">Order ID</th>
-        <th scope="col">Name</th>
-        <th scope="col">Products</th>
-        <th scope="col">Amount Paid</th>
-        <th scope="col">Payment Status</th>
-        <th scope="col">Address</th>
-        <th scope="col">Phone Number</th>
-        <th scope="col">Delivery Status</th>
-        <th scope="col">Delivered</th>
-        <th scope="col">Date</th>
-      </tr>
-    </thead>
-    <tbody>
-
-        {% for i  in items %}
-
-        <tr>
-            <th scope="row">{{i.oid}} </th>
-            <td> {{i.name}}</td>
-            <td>{{i.items_json}} </td>
-            <td>{{i.amount}} </td>
-            <td> {{i.paymentstatus}}</td>
-            <td> {{i.address1}}</td>
-            <td> {{i.phone}}</td>
-
-            {% for j in status  %}
-            <td> {{j.update_desc}}</td>
-
-
-       
-            {% if j.delivered %}
-            <td><i class="fa-solid fa-circle-check"></i> Delivered</td>
-            {% else %}
-            <td> <i class="fa-solid fa-truck"></i> Not Delivered</td>
-            {% endif %}
-
-
-            <td> {{j.timestamp}}</td>
-            {% endfor %}
-  
-          
-        
-        {% endfor %}
-
-
-
-    </tbody>
-</table>
+        <div class="row">
+            <!-- User Profile Card -->
+            <div class="col-md-4">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white text-center">
+                        <h4 class="my-2">User Profile</h4>
+                    </div>
+                    <div class="card-body text-center">
+                        <div class="mb-3">
+                            <img src="https://ui-avatars.com/api/?name={{request.user}}&size=120&background=0D8ABC&color=fff" 
+                                 alt="User Avatar" class="rounded-circle img-thumbnail">
+                        </div>
+                        <h5 class="card-title">{{ request.user.first_name }} {{ request.user.last_name }}</h5>
+                        <p class="text-muted mb-1">{{ request.user.email }}</p>
+                        <p class="text-muted">Member since: {{ request.user.date_joined|date:"F d, Y" }}</p>
+                        <a href="#" class="btn btn-outline-primary btn-sm mt-2">Edit Profile</a>
+                    </div>
+                </div>
+                
+                <!-- Quick Stats -->
+                <div class="card shadow-sm">
+                    <div class="card-header bg-info text-white text-center">
+                        <h5 class="my-1">Order Summary</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Total Orders:</span>
+                            <strong>{{ items|length }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Pending Delivery:</span>
+                            <strong>
+                                {% with pending=items|length|add:"-delivered_count" %}
+                                    {{ pending }}
+                                {% endwith %}
+                            </strong>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Total Spent:</span>
+                            <strong>
+                                ₹{% for item in items %}{% if forloop.last %}{{ item.amount }}{% endif %}{% endfor %}
+                            </strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Order History -->
+            <div class="col-md-8">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-success text-white">
+                        <h4 class="my-1">Order History</h4>
+                    </div>
+                    <div class="card-body">
+                        {% if items %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th scope="col">Order ID</th>
+                                        <th scope="col">Products</th>
+                                        <th scope="col">Amount</th>
+                                        <th scope="col">Status</th>
+                                        <th scope="col">Date</th>
+                                        <th scope="col">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for i in items %}
+                                    <tr>
+                                        <td><small>{{ i.oid }}</small></td>
+                                        <td>
+                                            <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="popover" 
+                                                    title="Products" data-bs-content="{{ i.items_json }}">
+                                                View Products
+                                            </button>
+                                        </td>
+                                        <td>₹{{ i.amount }}</td>
+                                        <td>
+                                            {% for j in status %}
+                                                {% if j.delivered %}
+                                                    <span class="badge bg-success">Delivered</span>
+                                                {% else %}
+                                                    <span class="badge bg-warning">Processing</span>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </td>
+                                        <td><small>{% for j in status %}{{ j.timestamp|date:"M d, Y" }}{% endfor %}</small></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary">View Details</button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No orders yet</h5>
+                            <p>You haven't placed any orders with us.</p>
+                            <a href="/" class="btn btn-primary">Start Shopping</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </section>
+
+<!-- Add some custom CSS -->
+<style>
+    .card {
+        border: none;
+        border-radius: 10px;
+    }
+    .img-thumbnail {
+        border: 3px solid #0D8ABC;
+        padding: 3px;
+    }
+    .badge {
+        font-size: 0.75em;
+    }
+</style>
+
+<!-- Initialize popovers -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
+        var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+            return new bootstrap.Popover(popoverTriggerEl)
+        })
+    });
+</script>
 {% endblock body %}
