@@ -1,0 +1,61 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+.env/
+env/
+ENV/
+*.env
+
+# Django stuff
+*.log
+*.pot
+*.pyc
+db.sqlite3
+media/
+staticfiles/
+
+# Migrations (optional, sometimes kept in git)
+*/migrations/*.py
+!*/migrations/__init__.py
+
+# IDEs and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Node / frontend
+node_modules/
+build/
+dist/
+*.lock
+
+# Machine Learning / Data
+*.h5
+*.pkl
+*.joblib
+*.csv
+*.tsv
+*.npz
+*.npy
+
+# Firebase / Google credentials
+*.json
+firebase-debug.log
+
+# Coverage / testing
+.coverage
+htmlcov/
+.tox/
+pytest_cache/
