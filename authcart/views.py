@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_decode,urlsafe_base64_encode
 from .utils import TokenGenerator,generate_token
-from django.utils.encoding import force_bytes,force_text,DjangoUnicodeDecodeError
+from django.utils.encoding import force_bytes,force_str,DjangoUnicodeDecodeError
 from django.core.mail import EmailMessage
 from django.conf import settings
 
@@ -34,7 +34,7 @@ def signup(request):
         message=render_to_string('activate.html',{
             'user':user,
             'domain':'127.0.0.1:8000',
-            'uid':urlsafe_base64_encode(force_bytes(user.pk)),
+            'uidb64':urlsafe_base64_encode(force_bytes(user.pk)),
             'token':generate_token.make_token(user)
 
         })
@@ -49,7 +49,7 @@ def signup(request):
 class ActivateAccountView(View):
     def get(self,request,uidb64,token):
         try:
-            uid=force_text(urlsafe_base64_decode(uidb64))
+            uid=force_str(urlsafe_base64_decode(uidb64))
             user=User.objects.get(pk=uid)
         except Exception as identifier:
             user=None
@@ -119,7 +119,7 @@ class SetNewPasswordView(View):
             'token':token
         }
         try:
-            user_id=force_text(urlsafe_base64_decode(uidb64))
+            user_id=force_str(urlsafe_base64_decode(uidb64))
             user=User.objects.get(pk=user_id)
 
             if  not PasswordResetTokenGenerator().check_token(user,token):
@@ -143,7 +143,7 @@ class SetNewPasswordView(View):
             return render(request,'set-new-password.html',context)
         
         try:
-            user_id=force_text(urlsafe_base64_decode(uidb64))
+            user_id=force_str(urlsafe_base64_decode(uidb64))
             user=User.objects.get(pk=user_id)
             user.set_password(password)
             user.save()

@@ -132,6 +132,7 @@ def profile(request):
     currentuser = request.user.username
     items = Orders.objects.filter(email=currentuser)
     rid = ""
+    delivered_count = 0
 
     for i in items:
         print(i.oid)
@@ -145,8 +146,14 @@ def profile(request):
         status = OrderUpdate.objects.filter(order_id=int(rid))
         for j in status:
             print(j.update_desc)
+            if j.delivered:
+                delivered_count += 1
     else:
         print("Invalid or empty order ID:", repr(rid))
 
-    context = {"items": items, "status": status}
+    context = {
+        "items": items, 
+        "status": status,
+        "delivered_count": delivered_count
+    }
     return render(request, "profile.html", context)
