@@ -9,12 +9,11 @@ Home
 {% endblock content %} 
 {% block body %} 
 {% load static %}
+{% load mathfilters %}
 
-<!-- ======= Portfolio Section ======= -->
 <section id="portfolio" class="portfolio">
   <div class="container">
     {% for message in messages %}
-
     <div
       class="alert alert-{{message.tags}} alert-dismissible fade show"
       role="alert"
@@ -35,20 +34,45 @@ Home
     </div>
 
     {% for product, range, nSlides in allProds %}
-
     <h3 class="my-3 text-center text-success bg-light">
       {{product.0.category}} Flashsale
     </h3>
-
     <div class="container">
       <div class="row">
-
         {% for i in product %}
         <div class="col-md-3 mt-3">
           <img src="/media/{{i.image}}" class="card-img-top" alt="not found" height="200px" width="150px" />
           <div class="card-body">
             <h5 class="card-title mt-2" id="namepr{{i.id}}">{{i.product_name}}</h5>
             <p class="card-text">{{i.desc|slice:"0:53"}}...</p>
+            
+            <div class="product-rating d-flex align-items-center mb-1">
+                <span class="me-1">{{ i.avg_rating|floatformat:1 }}</span>
+                {% for star_type in i.stars_list %}
+                    {% if star_type == 'full' %}
+                        <i class="fas fa-star text-warning me-1"></i>
+                    {% elif star_type == 'half' %}
+                        <i class="fas fa-star-half-alt text-warning me-1"></i>
+                    {% else %}
+                        <i class="far fa-star text-warning me-1"></i>
+                    {% endif %}
+                {% endfor %}
+                <span class="ms-1">({{ i.rating_count }})</span>
+            </div>
+
+            {% if request.user.is_authenticated %}
+            <form action="/rate/" method="post" class="rating-form d-inline-block">
+                {% csrf_token %}
+                <input type="hidden" name="product_id" value="{{ i.id }}">
+                <input type="hidden" name="rating" id="rating-{{ i.id }}" value="{{ i.user_rating }}" data-initial-rating="{{ i.user_rating }}">
+                <div class="star-selector">
+                    {% for star_value in "54321"|slice:"::-1" %}
+                        <i class="far fa-star text-warning" data-rating="{{ star_value }}" data-product-id="{{ i.id }}"></i>
+                    {% endfor %}
+                </div>
+            </form>
+            {% endif %}
+
             <h6 class="card-title mb-3">
               Price:<span id="pricepr{{i.id}}">{{i.price}}</span>
             </h6>
@@ -59,141 +83,153 @@ Home
             </span>
 
             <a href="/media/{{i.image}}">
-              <button class="btn btn-dark btn-sm cart"><i class="fa-solid fa-eye"></i></button></a
-            >
+              <button class="btn btn-dark btn-sm cart"><i class="fa-solid fa-eye"></i></button>
+            </a>
           </div>
         </div>
-
         {% endfor %}
       </div>
     </div>
     {% endfor %}
   </div>
 </section>
-<!-- End Portfolio Section -->
+<style>
+  .product-rating {
+    color: #ffc107;
+  }
+  .product-rating .fa-star,
+  .product-rating .fa-star-half-alt,
+  .product-rating .far {
+      font-size: 1rem; 
+  }
+  .star-selector i {
+      cursor: pointer;
+  }
+</style>
 
 <script src="https://code.jquery.com/jquery-3.3.1.js" integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60=" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
-  
- 
+
 <script>
-  
-  //find pout the card from local storage
+    if (localStorage.getItem('cart') == null) {
+        var cart = {};
+    } else {
+        cart = JSON.parse(localStorage.getItem('cart'));
+        updateCart(cart);
+    }
+    $('.divpr').on('click', 'button.cart', function() {
+        var idstr = this.id.toString();
+        console.log(idstr)
 
-  if (localStorage.getItem('cart') == null) {
-      var cart = {};
-  } else {
-      cart = JSON.parse(localStorage.getItem('cart'));
-      updateCart(cart);
-
-  }
-  // add or increment code
-
-  // $('.cart').click(function() {
-  $('.divpr').on('click', 'button.cart', function() {
-      var idstr = this.id.toString();
-      console.log(idstr)
-
-      if (cart[idstr] != undefined) {
-          qty = cart[idstr][0] + 1;
-
-      } else {
-          qty = 1;
-          name = document.getElementById('name' + idstr).innerHTML;
-          price = document.getElementById('price' + idstr).innerHTML;
-          cart[idstr] = [qty, name, price];
-          
-      }
-      updateCart(cart);
-
-      localStorage.setItem('cart', JSON.stringify(cart));
-      document.getElementById('cart').innerHTML = Object.keys(cart).length;
-      console.log( Object.keys(cart).length)
-      document.getElementById("popcart").click();
-  });
-  // add pop over to cart
-
-  $('#popcart').popover();
-
-  updatePopover(cart);
-  function updatePopover(cart) {
-
-      
-      console.log('we are  inside update popover');
-      
-      var popStr = "";
-      var popStr = popStr + "<h5> cart for your items in my shopping cart </h5> <div class='mx-2 my-2'>";
-      var i = 1;
-      for (var item in cart) {
-          popStr = popStr + "<b>" + i + "</b>. ";
-          popStr = popStr + document.getElementById('name' + item).innerHTML.slice(0, 19) + "..." + "<b>" +cart[item][0] + "</b>"+ "Qty"  + '<br>';
-          i = i + 1;
-      }
-
-      popStr = popStr + "</div> <a href='/checkout'><button class='btn btn-success' id='clearCart'>Checkout</button></a>  <button class='btn btn-dark' onclick='clearCart()' id='clearCart'>ClearCart</button>"
-      document.getElementById('popcart').setAttribute('data-content', popStr);
-      $('#popcart').popover('show');
-      document.getElementById("popcart").click();
-  }
-
-  function clearCart() {
-      cart = JSON.parse(localStorage.getItem('cart'));
-      for (var item in cart) {
-          document.getElementById('div' + item).innerHTML = '<button id="' + item + '" class="btn btn-danger cart">AddtoCard <i class="fa-solid fa-cart-shopping"></i></button>'
-      }
-      localStorage.clear();
-      cart = {};
-      updateCart(cart);
-      
-     let clear= document.getElementById("popcart").click();
-     document.getElementById("popcart").click();
-    
-  }
-
-  function updateCart(cart) {
-      var sum = 0;
-      for (var item in cart) {
-          sum = sum + cart[item][0];
-          document.getElementById('div' + item).innerHTML = "<button id='minus" + item + "'class='btn btn-success minus'>-</button> <span id='val" + item + "''>" + cart[item][0] + "</span> <button id='plus" + item + "' class='btn btn-success plus'> + </button>";
-      }
-      localStorage.setItem('cart', JSON.stringify(cart));
-      document.getElementById('cart').innerHTML = sum;
-      console.log(cart);
-      updatePopover(cart);
-      document.getElementById("popcart").click();
-  }
-
-  //if plus or minus button is clicked change the cart as well as the display value
-  $('.divpr').on("click", "button.minus", function() {
-
-      a = this.id.slice(7, );
-      cart['pr' + a][0] = cart['pr' + a][0] - 1;
-      cart['pr' + a][0] = Math.max(0, cart['pr' + a][0]);
-      document.getElementById('valpr' + a).innerHTML = cart['pr' + a][0];
-      updateCart(cart);
-      
-
-  })
-
-
-  $('.divpr').on("click", "button.plus", function() {
-
-      a = this.id.slice(6, );
-      cart['pr' + a][0] = cart['pr' + a][0] + 1;
-
-      document.getElementById('valpr' + a).innerHTML = cart['pr' + a][0];
-      updateCart(cart);
-      
-
-  })
+        if (cart[idstr] != undefined) {
+            qty = cart[idstr][0] + 1;
+        } else {
+            qty = 1;
+            name = document.getElementById('name' + idstr).innerHTML;
+            price = document.getElementById('price' + idstr).innerHTML;
+            cart[idstr] = [qty, name, price];
+        }
+        updateCart(cart);
+        localStorage.setItem('cart', JSON.stringify(cart));
+        document.getElementById('cart').innerHTML = Object.keys(cart).length;
+        console.log(Object.keys(cart).length)
+        document.getElementById("popcart").click();
+    });
+    $('#popcart').popover();
+    updatePopover(cart);
+    function updatePopover(cart) {
+        console.log('we are inside update popover');
+        var popStr = "";
+        var popStr = popStr + "<h5> cart for your items in my shopping cart </h5> <div class='mx-2 my-2'>";
+        var i = 1;
+        for (var item in cart) {
+            popStr = popStr + "<b>" + i + "</b>. ";
+            popStr = popStr + document.getElementById('name' + item).innerHTML.slice(0, 19) + "..." + "<b>" + cart[item][0] + "</b>" + "Qty" + '<br>';
+            i = i + 1;
+        }
+        popStr = popStr + "</div> <a href='/checkout'><button class='btn btn-success' id='clearCart'>Checkout</button></a> <button class='btn btn-dark' onclick='clearCart()' id='clearCart'>ClearCart</button>"
+        document.getElementById('popcart').setAttribute('data-content', popStr);
+        $('#popcart').popover('show');
+        document.getElementById("popcart").click();
+    }
+    function clearCart() {
+        cart = JSON.parse(localStorage.getItem('cart'));
+        for (var item in cart) {
+            document.getElementById('div' + item).innerHTML = '<button id="' + item + '" class="btn btn-danger cart">AddtoCart <i class="fa-solid fa-cart-shopping"></i></button>'
+        }
+        localStorage.clear();
+        cart = {};
+        updateCart(cart);
+        let clear = document.getElementById("popcart").click();
+        document.getElementById("popcart").click();
+    }
+    function updateCart(cart) {
+        var sum = 0;
+        for (var item in cart) {
+            sum = sum + cart[item][0];
+            document.getElementById('div' + item).innerHTML = "<button id='minus" + item + "'class='btn btn-success minus'>-</button> <span id='val" + item + "''>" + cart[item][0] + "</span> <button id='plus" + item + "' class='btn btn-success plus'> + </button>";
+        }
+        localStorage.setItem('cart', JSON.stringify(cart));
+        document.getElementById('cart').innerHTML = sum;
+        console.log(cart);
+        updatePopover(cart);
+        document.getElementById("popcart").click();
+    }
+    $('.divpr').on("click", "button.minus", function() {
+        a = this.id.slice(7, );
+        cart['pr' + a][0] = cart['pr' + a][0] - 1;
+        cart['pr' + a][0] = Math.max(0, cart['pr' + a][0]);
+        document.getElementById('valpr' + a).innerHTML = cart['pr' + a][0];
+        updateCart(cart);
+    })
+    $('.divpr').on("click", "button.plus", function() {
+        a = this.id.slice(6, );
+        cart['pr' + a][0] = cart['pr' + a][0] + 1;
+        document.getElementById('valpr' + a).innerHTML = cart['pr' + a][0];
+        updateCart(cart);
+    })
 </script>
 
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const starSelectors = document.querySelectorAll('.star-selector');
 
-
-
-
-
-
+        starSelectors.forEach(selector => {
+            const stars = selector.querySelectorAll('i');
+            const hiddenInput = selector.closest('form').querySelector('input[name="rating"]');
+            
+            const initialRating = hiddenInput.dataset.initialRating;
+            const setStars = (ratingValue) => {
+                stars.forEach(s => {
+                    if (s.dataset.rating <= ratingValue) {
+                        s.classList.remove('far');
+                        s.classList.add('fas');
+                    } else {
+                        s.classList.remove('fas');
+                        s.classList.add('far');
+                    }
+                });
+            };
+            setStars(initialRating);
+            stars.forEach(star => {
+                star.addEventListener('mouseover', (event) => {
+                    const currentRating = event.target.dataset.rating;
+                    setStars(currentRating);
+                });
+                star.addEventListener('mouseout', () => {
+                    setStars(hiddenInput.value || initialRating);
+                });
+            });
+            stars.forEach(star => {
+                star.addEventListener('click', (event) => {
+                    const ratingValue = event.target.dataset.rating;
+                    hiddenInput.value = ratingValue;
+                    selector.closest('form').submit();
+                });
+            });
+        });
+    });
+</script>
 
 {% endblock body %}

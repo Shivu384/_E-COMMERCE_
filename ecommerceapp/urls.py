@@ -8,5 +8,5 @@ urlpatterns = [
     path('profile',views.profile,name="profile"),
     path('checkout/', views.checkout, name="Checkout"),
     path('handlerequest/', views.handlerequest, name="HandleRequest"),
-
+    path('rate/', views.rate, name="rate"), 
 ]
